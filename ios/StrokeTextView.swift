@@ -42,41 +42,6 @@ class StrokeTextView: RCTView {
     invalidateLayout()
   }
 
-  override func sizeThatFits(_ size: CGSize) -> CGSize {
-    NSLog("[StrokeText] sizeThatFits called with: \(size)")
-
-    // RN may pass 0 or .greatestFiniteMagnitude; handle both
-    let proposedWidth: CGFloat
-    if size.width.isFinite && size.width > 0 {
-      proposedWidth = size.width
-    } else {
-      // When width is unconstrained, measure as if infinite; UILabel will give its natural width.
-      proposedWidth = CGFloat.greatestFiniteMagnitude
-    }
-
-    let availableLabelWidth =
-      proposedWidth - paddingInsets.left - paddingInsets.right
-
-    let measured = measuredLabelSize(for: availableLabelWidth)
-
-    return CGSize(
-      width: measured.width + paddingInsets.left + paddingInsets.right,
-      height: measured.height + paddingInsets.top + paddingInsets.bottom
-    )
-  }
-
-  override var intrinsicContentSize: CGSize {
-    let s = super.intrinsicContentSize
-    NSLog("[StrokeText] view intrinsicContentSize(super): \(s)")
-
-    // Useful for UIKit/autolayout paths and as a fallback; RN primarily uses sizeThatFits.
-    let measured = measuredLabelSize(for: CGFloat.greatestFiniteMagnitude)
-    return CGSize(
-      width: measured.width + paddingInsets.left + paddingInsets.right,
-      height: measured.height + paddingInsets.top + paddingInsets.bottom
-    )
-  }
-
   override func layoutSubviews() {
     super.layoutSubviews()
     NSLog("[StrokeText] layoutSubviews(): \(bounds)")
@@ -99,13 +64,8 @@ class StrokeTextView: RCTView {
     let newSize = CGSize(width: width, height: height)
     NSLog("[StrokeText] newSize: \(newSize)")
 
-    // ⛔️ In Fabric this is a no-op for driving measurement; keep it only for old arch.
-    #if !RCT_NEW_ARCH_ENABLED
-      if bounds.size.height != height {
-        NSLog("[StrokeText] Updating size via UIManager (old arch)")
-        bridge?.uiManager.setSize(newSize, for: self)
-      }
-    #endif
+    let intrinsic = CGSize(width: UIView.noIntrinsicMetric, height: height)
+    bridge?.uiManager.setIntrinsicContentSize(intrinsic, for: self)
   }
 
   // MARK: - Props

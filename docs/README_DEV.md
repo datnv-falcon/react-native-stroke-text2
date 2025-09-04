@@ -52,10 +52,10 @@ gh release create v1.0.0 \
 npm run build
 npm version patch -m "chore(release): %s"
 git push origin main --follow-tags
-gh release create v1.0.1 \
+gh release create v1.0.3 \
   --repo elliotfleming/react-native-stroke-text \
-  --title "v1.0.1" \
-  --notes "🔧 Patch release"
+  --title "v1.0.3" \
+  --notes "Fix layout issues in new arch"
 ```
 
 ## Release Cleanup
