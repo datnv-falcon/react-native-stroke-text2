@@ -28,7 +28,8 @@ This is the most comprehensive and actively maintained stroke text library for R
   - [Installation](#installation)
     - [Expo (Managed)](#expo-managed)
     - [Bare React Native](#bare-react-native)
-    - [Android](#android)
+      - [iOS](#ios)
+      - [Android](#android)
   - [Usage](#usage)
   - [Examples](#examples)
   - [API](#api)
@@ -74,13 +75,14 @@ npm install react-native-stroke-text
 yarn add react-native-stroke-text
 ```
 
+#### iOS
 After installing the package:
 
 ```bash
 cd ios && pod install && cd ..
 ```
 
-### Android
+#### Android
 
 * **Minimum** `compileSdkVersion` 34
 * Autolinking should handle everything; no further steps required.

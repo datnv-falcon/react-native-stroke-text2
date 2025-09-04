@@ -30,7 +30,7 @@ class StrokeTextView: RCTView {
 
   // MARK: - Layout
 
-  @objc override func reactSetFrame(_ frame: CGRect) {
+  override func reactSetFrame(_ frame: CGRect) {
     NSLog("[StrokeText] reactSetFrame(frame): \(frame)")
     super.reactSetFrame(frame)
 
@@ -42,6 +42,41 @@ class StrokeTextView: RCTView {
     invalidateLayout()
   }
 
+  override func sizeThatFits(_ size: CGSize) -> CGSize {
+    NSLog("[StrokeText] sizeThatFits called with: \(size)")
+
+    // RN may pass 0 or .greatestFiniteMagnitude; handle both
+    let proposedWidth: CGFloat
+    if size.width.isFinite && size.width > 0 {
+      proposedWidth = size.width
+    } else {
+      // When width is unconstrained, measure as if infinite; UILabel will give its natural width.
+      proposedWidth = CGFloat.greatestFiniteMagnitude
+    }
+
+    let availableLabelWidth =
+      proposedWidth - paddingInsets.left - paddingInsets.right
+
+    let measured = measuredLabelSize(for: availableLabelWidth)
+
+    return CGSize(
+      width: measured.width + paddingInsets.left + paddingInsets.right,
+      height: measured.height + paddingInsets.top + paddingInsets.bottom
+    )
+  }
+
+  override var intrinsicContentSize: CGSize {
+    let s = super.intrinsicContentSize
+    NSLog("[StrokeText] view intrinsicContentSize(super): \(s)")
+
+    // Useful for UIKit/autolayout paths and as a fallback; RN primarily uses sizeThatFits.
+    let measured = measuredLabelSize(for: CGFloat.greatestFiniteMagnitude)
+    return CGSize(
+      width: measured.width + paddingInsets.left + paddingInsets.right,
+      height: measured.height + paddingInsets.top + paddingInsets.bottom
+    )
+  }
+
   override func layoutSubviews() {
     super.layoutSubviews()
     NSLog("[StrokeText] layoutSubviews(): \(bounds)")
@@ -49,33 +84,28 @@ class StrokeTextView: RCTView {
     let innerFrame = bounds.inset(by: paddingInsets)
     label.frame = innerFrame
 
-    let hasExplicitWidth =
-      bounds.width.isFinite && bounds.width > 0 && bounds.width < CGFloat.greatestFiniteMagnitude
-    // let hasExplicitHeight =
-    //   size.height.isFinite && size.height > 0 && size.height < CGFloat.greatestFiniteMagnitude
-    NSLog("[StrokeText] hasExplicitWidth: \(hasExplicitWidth)")
+    // Use available container width if present; otherwise measure unconstrained.
+    let containerWidth = bounds.width > 0 ? bounds.width : CGFloat.greatestFiniteMagnitude
+    let availableLabelWidth = containerWidth - paddingInsets.left - paddingInsets.right
 
-    // let containerWidth = resolvedContainerWidth(from: bounds.width)
-    let containerWidth = bounds.width
-    let availableLabelWidth =
-      containerWidth
-      - paddingInsets.left
-      - paddingInsets.right
     let measured = measuredLabelSize(for: availableLabelWidth)
 
     let width =
-      hasExplicitWidth
-      ? containerWidth
+      (bounds.width > 0)
+      ? bounds.width
       : (measured.width + paddingInsets.left + paddingInsets.right)
-    let height = measured.height + paddingInsets.top + paddingInsets.bottom
 
+    let height = measured.height + paddingInsets.top + paddingInsets.bottom
     let newSize = CGSize(width: width, height: height)
     NSLog("[StrokeText] newSize: \(newSize)")
 
-    if bounds.size.height != height {
-      NSLog("[StrokeText] Updating size in bridge")
-      bridge?.uiManager.setSize(newSize, for: self)
-    }
+    // ⛔️ In Fabric this is a no-op for driving measurement; keep it only for old arch.
+    #if !RCT_NEW_ARCH_ENABLED
+      if bounds.size.height != height {
+        NSLog("[StrokeText] Updating size via UIManager (old arch)")
+        bridge?.uiManager.setSize(newSize, for: self)
+      }
+    #endif
   }
 
   // MARK: - Props
