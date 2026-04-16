@@ -89,7 +89,7 @@ class StrokeTextView extends View {
         int style = (bold ? Typeface.BOLD : Typeface.NORMAL) |
             (italic ? Typeface.ITALIC : Typeface.NORMAL);
 
-        Typeface base = getFont(fontFamily)
+        Typeface base = getFont(fontFamily);
         Typeface tf = Typeface.create(base, style);
 
         /* text paint */
