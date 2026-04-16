@@ -108,6 +108,7 @@ class StrokeTextView extends View {
         strokePaint.setColor(strokeColor);
         strokePaint.setTypeface(tf);
         strokePaint.setTextSize(fontSize);
+        strokePaint.setLetterSpacing(letterSpacing / fontSize);
 
         /* width calculation */
         int avail = getWidth() > 0
@@ -202,12 +203,14 @@ class StrokeTextView extends View {
     }
 
     public void setTextColor(String color) {
-        int parsed = parseColor(color);
-        if (textColor != parsed) {
-            textColor = parsed;
-            layoutDirty = true;
-            invalidate();
-        }
+        try {
+            int parsed = parseColor(color);
+            if (textColor != parsed) {
+                textColor = parsed;
+                layoutDirty = true;
+                invalidate();
+            }
+        } catch(Exception ex) {}
     }
 
     public void setStrokeColor(String color) {
